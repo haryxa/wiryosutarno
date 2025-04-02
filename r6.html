@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pohon Keluarga Wiryo Sutarno</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        form { margin-bottom: 20px; }
+        .family-member { margin-bottom: 10px; }
+        .member-container { 
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            margin: 10px 0; 
+            position: relative; 
+            border-radius: 5px; 
+        }
+        .cucu-container, .cicit-container, .buyut-container, 
+        .canggah-container, .wareng-container { 
+            margin-left: 20px; 
+        }
+        button { 
+            margin-top: 5px; 
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background-color: #45a049; }
+        .remove-btn { 
+            position: absolute; 
+            top: 5px; 
+            right: 5px; 
+            background: red; 
+            color: white; 
+            border: none; 
+            padding: 3px 7px; 
+            cursor: pointer; 
+            border-radius: 3px;
+        }
+        input[type="text"] {
+            padding: 5px;
+            margin: 3px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .preview-member {
+            padding: 5px;
+            font-family: monospace;
+            margin-left: 20px;
+            border-radius: 3px;
+            margin-bottom: 2px;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+        }
+        .action-buttons {
+            margin-top: 20px;
+        }
+        #save-btn { background-color: #ff9800; }
+        #save-btn:hover { background-color: #e68a00; }
+        
+        /* Style untuk tabel data */
+        .data-table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .data-table th {
+            background-color: #f2f2f2;
+        }
+        
+        #table-container {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        /* Warna untuk setiap generasi */
+        .generasi-1 { background-color: #FFA07A; }
+        .generasi-2 { background-color: #FFE4E1; }
+        .generasi-3 { background-color: #E0FFFF; }
+        .generasi-4 { background-color: #98FB98; }
+        .generasi-5 { background-color: #DDA0DD; }
+        .generasi-6 { background-color: #FFDAB9; }
+        .generasi-7 { background-color: #F0E68C; }
+        
+        .family-member.generasi-1 {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .preview-generasi-1 { background-color: #FFA07A; }
+        .preview-generasi-2 { background-color: #FFE4E1; }
+        .preview-generasi-3 { background-color: #E0FFFF; }
+        .preview-generasi-4 { background-color: #98FB98; }
+        .preview-generasi-5 { background-color: #DDA0DD; }
+        .preview-generasi-6 { background-color: #FFDAB9; }
+        .preview-generasi-7 { background-color: #F0E68C; }
+        
+        tr.generasi-1 td { background-color: #FFA07A; }
+        tr.generasi-2 td { background-color: #FFE4E1; }
+        tr.generasi-3 td { background-color: #E0FFFF; }
+        tr.generasi-4 td { background-color: #98FB98; }
+        tr.generasi-5 td { background-color: #DDA0DD; }
+        tr.generasi-6 td { background-color: #FFDAB9; }
+        tr.generasi-7 td { background-color: #F0E68C; }
+    </style>
+</head>
+<body>
+    <h2>Pohon Keluarga Wiryo Sutarno</h2>
+    
+    <form id="family-form">
+        <div class="family-member generasi-1">
+            <label>Nama kakek: 
+                <input type="text" id="sutarno" name="sutarno" value="Wiryo Sutarno" required>
+            </label>
+        </div>
+        <div class="family-member generasi-1">
+            <label>Nama Pasangan: 
+                <input type="text" id="istri" name="istri" value="Istri Wiryo Sutarno" required>
+            </label>
+        </div>
+        
+        <h3>Anak dan Pasangan</h3>
+        <div id="anak-container"></div>
+        <button type="button" onclick="tambahAnak()">Tambah Anak</button>
+        
+        <div class="action-buttons">
+            <button type="button" id="save-btn" onclick="simpanData()">Simpan Data</button>
+            <button type="button" onclick="generatePreview()">Tampilkan Preview</button>
+        </div>
+    </form>
+
+    <h3>Preview Pohon Silsilah</h3>
+    <div id="preview"></div>
+
+    <!-- Container untuk tabel data -->
+    <div id="table-container">
+        <h3>Data Tersimpan</h3>
+        <table class="data-table" id="saved-data-table">
+            <thead>
+                <tr>
+                    <th>Generasi</th>
+                    <th>Nama</th>
+                    <th>Pasangan</th>
+                    <th>Hubungan</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Data akan diisi oleh JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Fungsi tambah anggota keluarga (6 generasi)
+        function tambahAnak() {
+            let anakContainer = document.getElementById("anak-container");
+            let anakDiv = document.createElement("div");
+            anakDiv.classList.add("member-container", "generasi-2");
+            
+            let anakIndex = anakContainer.children.length + 1;
+            let anakId = `anak-${anakIndex}`;
+            anakDiv.setAttribute("id", anakId);
+            
+            anakDiv.innerHTML = `
+                <button class="remove-btn" type="button" onclick="hapusElemen('${anakId}')">X</button>
+                <label>Anak ${anakIndex}: 
+                    <input type="text" id="${anakId}-nama" name="${anakId}-nama" value="Anak ${anakIndex}" required>
+                </label>
+                <label>Pasangan: 
+                    <input type="text" id="${anakId}-pasangan" name="${anakId}-pasangan" value="Pasangan Anak ${anakIndex}">
+                </label>
+                <div class="cucu-container" id="cucu-container-${anakIndex}"></div>
+                <button type="button" onclick="tambahCucu(${anakIndex})">Tambah Cucu</button>
+            `;
+            
+            anakContainer.appendChild(anakDiv);
+        }
+
+        function tambahCucu(anakIndex) {
+            let cucuContainer = document.getElementById(`cucu-container-${anakIndex}`);
+            let cucuIndex = cucuContainer.children.length + 1;
+            let cucuId = `cucu-${anakIndex}-${cucuIndex}`;
+            
+            let cucuDiv = document.createElement("div");
+            cucuDiv.classList.add("member-container", "generasi-3");
+            cucuDiv.setAttribute("id", cucuId);
+            cucuDiv.innerHTML = `
+                <button class="remove-btn" type="button" onclick="hapusElemen('${cucuId}')">X</button>
+                <label>Cucu ${cucuIndex}: 
+                    <input type="text" id="${cucuId}-nama" name="${cucuId}-nama" value="Cucu ${cucuIndex}" required>
+                </label>
+                <label>Pasangan: 
+                    <input type="text" id="${cucuId}-pasangan" name="${cucuId}-pasangan" value="Pasangan Cucu ${cucuIndex}">
+                </label>
+                <div class="cicit-container" id="cicit-container-${anakIndex}-${cucuIndex}"></div>
+                <button type="button" onclick="tambahCicit(${anakIndex}, ${cucuIndex})">Tambah Cicit</button>
+            `;
+            
+            cucuContainer.appendChild(cucuDiv);
+        }
+
+        function tambahCicit(anakIndex, cucuIndex) {
+            let cicitContainer = document.getElementById(`cicit-container-${anakIndex}-${cucuIndex}`);
+            let cicitIndex = cicitContainer.children.length + 1;
+            let cicitId = `cicit-${anakIndex}-${cucuIndex}-${cicitIndex}`;
+            
+            let cicitDiv = document.createElement("div");
+            cicitDiv.classList.add("member-container", "generasi-4");
+            cicitDiv.setAttribute("id", cicitId);
+            cicitDiv.innerHTML = `
+                <button class="remove-btn" type="button" onclick="hapusElemen('${cicitId}')">X</button>
+                <label>Cicit ${cicitIndex}: 
+                    <input type="text" id="${cicitId}-nama" name="${cicitId}-nama" value="Cicit ${cicitIndex}" required>
+                </label>
+                <label>Pasangan: 
+                    <input type="text" id="${cicitId}-pasangan" name="${cicitId}-pasangan" value="Pasangan Cicit ${cicitIndex}">
+                </label>
+                <div class="buyut-container" id="buyut-container-${anakIndex}-${cucuIndex}-${cicitIndex}"></div>
+                <button type="button" onclick="tambahBuyut(${anakIndex}, ${cucuIndex}, ${cicitIndex})">Tambah Buyut</button>
+            `;
+            
+            cicitContainer.appendChild(cicitDiv);
+        }
+
+        function tambahBuyut(anakIndex, cucuIndex, cicitIndex) {
+            let buyutContainer = document.getElementById(`buyut-container-${anakIndex}-${cucuIndex}-${cicitIndex}`);
+            let buyutIndex = buyutContainer.children.length + 1;
+            let buyutId = `buyut-${anakIndex}-${cucuIndex}-${cicitIndex}-${buyutIndex}`;
+            
+            let buyutDiv = document.createElement("div");
+            buyutDiv.classList.add("member-container", "generasi-5");
+            buyutDiv.setAttribute("id", buyutId);
+            buyutDiv.innerHTML = `
+                <button class="remove-btn" type="button" onclick="hapusElemen('${buyutId}')">X</button>
+                <label>Buyut ${buyutIndex}: 
+                    <input type="text" id="${buyutId}-nama" name="${buyutId}-nama" value="Buyut ${buyutIndex}" required>
+                </label>
+                <label>Pasangan: 
+                    <input type="text" id="${buyutId}-pasangan" name="${buyutId}-pasangan" value="Pasangan Buyut ${buyutIndex}">
+                </label>
+                <div class="canggah-container" id="canggah-container-${anakIndex}-${cucuIndex}-${cicitIndex}-${buyutIndex}"></div>
+                <button type="button" onclick="tambahCanggah(${anakIndex}, ${cucuIndex}, ${cicitIndex}, ${buyutIndex})">Tambah Canggah</button>
+            `;
+            
+            buyutContainer.appendChild(buyutDiv);
+        }
+
+        function tambahCanggah(anakIndex, cucuIndex, cicitIndex, buyutIndex) {
+            let canggahContainer = document.getElementById(`canggah-container-${anakIndex}-${cucuIndex}-${cicitIndex}-${buyutIndex}`);
+            let canggahIndex = canggahContainer.children.length + 1;
+            let canggahId = `canggah-${anakIndex}-${cucuIndex}-${cicitIndex}-${buyutIndex}-${canggahIndex}`;
+            
+            let canggahDiv = document.createElement("div");
+            canggahDiv.classList.add("member-container", "generasi-6");
+            canggahDiv.setAttribute("id", canggahId);
+            canggahDiv.innerHTML = `
+                <button class="remove-btn" type="button" onclick="hapusElemen('${canggahId}')">X</button>
+                <label>Canggah ${canggahIndex}: 
+                    <input type="text" id="${canggahId}-nama" name="${canggahId}-nama" value="Canggah ${canggahIndex}" required>
+                </label>
+                <label>Pasangan: 
+                    <input type="text" id="${canggahId}-pasangan" name="${canggahId}-pasangan" value="Pasangan Canggah ${canggahIndex}">
+                </label>
+                <div class="wareng-container" id="wareng-container-${anakIndex}-${cucuIndex}-${cicitIndex}-${buyutIndex}-${canggahIndex}"></div>
+                <button type="button" onclick="tambahWareng(${anakIndex}, ${cucuIndex}, ${cicitIndex}, ${buyutIndex}, ${canggahIndex})">Tambah Wareng</button>
+            `;
+            
+            canggahContainer.appendChild(canggahDiv);
+        }
+
+        function tambahWareng(anakIndex, cucuIndex, cicitIndex, buyutIndex, canggahIndex) {
+            let warengContainer = document.getElementById(`wareng-container-${anakIndex}-${cucuIndex}-${cicitIndex}-${buyutIndex}-${canggahIndex}`);
+            let warengIndex = warengContainer.children.length + 1;
+            let warengId = `wareng-${anakIndex}-${cucuIndex}-${cicitIndex}-${buyutIndex}-${canggahIndex}-${warengIndex}`;
+            
+            let warengDiv = document.createElement("div");
+            warengDiv.classList.add("member-container", "generasi-7");
+            warengDiv.setAttribute("id", warengId);
+            warengDiv.innerHTML = `
+                <button class="remove-btn" type="button" onclick="hapusElemen('${warengId}')">X</button>
+                <label>Wareng ${warengIndex}: 
+                    <input type="text" id="${warengId}-nama" name="${warengId}-nama" value="Wareng ${warengIndex}" required>
+                </label>
+                <label>Pasangan: 
+                    <input type="text" id="${warengId}-pasangan" name="${warengId}-pasangan" value="Pasangan Wareng ${warengIndex}">
+                </label>
+            `;
+            
+            warengContainer.appendChild(warengDiv);
+        }
+
+        // Fungsi utilitas
+        function hapusElemen(id) {
+            let elem = document.getElementById(id);
+            if (elem) elem.remove();
+        }
+
+        function showNotification(message, duration = 3000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, duration);
+        }
+
+        function generatePreview() {
+            if (!document.getElementById("family-form").checkValidity()) {
+                showNotification("Harap isi semua field yang wajib diisi!", 3000);
+                return;
+            }
+
+            const data = ambilDataKeluarga();
+            const previewDiv = document.getElementById('preview');
+            previewDiv.innerHTML = '';
+
+            function createMember(text, level) {
+                const elem = document.createElement('div');
+                elem.className = `preview-member preview-generasi-${level + 1}`;
+                elem.style.marginLeft = `${level * 20}px`;
+                elem.textContent = text;
+                return elem;
+            }
+
+            previewDiv.appendChild(createMember(`Kakek: ${data.sutarno}`, 0));
+            previewDiv.appendChild(createMember(`Nenek: ${data.istri}`, 0));
+
+            data.anak.forEach((anak, aIdx) => {
+                previewDiv.appendChild(createMember(`Anak ${aIdx+1}: ${anak.nama} (Pasangan: ${anak.pasangan})`, 1));
+                
+                anak.cucu.forEach((cucu, cIdx) => {
+                    previewDiv.appendChild(createMember(`├─ Cucu ${cIdx+1}: ${cucu.nama} (Pasangan: ${cucu.pasangan})`, 2));
+                    
+                    cucu.cicit.forEach((cicit, citIdx) => {
+                        previewDiv.appendChild(createMember(`│  ├─ Cicit ${citIdx+1}: ${cicit.nama} (Pasangan: ${cicit.pasangan})`, 3));
+                        
+                        cicit.buyut.forEach((buyut, bIdx) => {
+                            previewDiv.appendChild(createMember(`│  │  ├─ Buyut ${bIdx+1}: ${buyut.nama} (Pasangan: ${buyut.pasangan})`, 4));
+                            
+                            buyut.canggah.forEach((canggah, cgIdx) => {
+                                previewDiv.appendChild(createMember(`│  │  │  ├─ Canggah ${cgIdx+1}: ${canggah.nama} (Pasangan: ${canggah.pasangan})`, 5));
+                                
+                                canggah.wareng.forEach((wareng, wIdx) => {
+                                    previewDiv.appendChild(createMember(`│  │  │  │  └─ Wareng ${wIdx+1}: ${wareng.nama} (Pasangan: ${wareng.pasangan})`, 6));
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
+        // Fungsi manajemen data (diperluas untuk 6 generasi)
+        function ambilDataKeluarga() {
+            let data = {
+                sutarno: document.getElementById("sutarno").value,
+                istri: document.getElementById("istri").value,
+                anak: []
+            };
+            
+            let anakContainer = document.getElementById("anak-container").children;
+            for (let anakDiv of anakContainer) {
+                let anakId = anakDiv.id;
+                let anakData = {
+                    nama: document.getElementById(`${anakId}-nama`).value,
+                    pasangan: document.getElementById(`${anakId}-pasangan`).value,
+                    cucu: []
+                };
+
+                let cucuContainer = anakDiv.querySelector(".cucu-container").children;
+                for (let cucuDiv of cucuContainer) {
+                    let cucuId = cucuDiv.id;
+                    let cucuData = {
+                        nama: document.getElementById(`${cucuId}-nama`).value,
+                        pasangan: document.getElementById(`${cucuId}-pasangan`).value,
+                        cicit: []
+                    };
+
+                    let cicitContainer = cucuDiv.querySelector(".cicit-container").children;
+                    for (let cicitDiv of cicitContainer) {
+                        let cicitId = cicitDiv.id;
+                        let cicitData = {
+                            nama: document.getElementById(`${cicitId}-nama`).value,
+                            pasangan: document.getElementById(`${cicitId}-pasangan`).value,
+                            buyut: []
+                        };
+
+                        let buyutContainer = cicitDiv.querySelector(".buyut-container").children;
+                        for (let buyutDiv of buyutContainer) {
+                            let buyutId = buyutDiv.id;
+                            let buyutData = {
+                                nama: document.getElementById(`${buyutId}-nama`).value,
+                                pasangan: document.getElementById(`${buyutId}-pasangan`).value,
+                                canggah: []
+                            };
+
+                            let canggahContainer = buyutDiv.querySelector(".canggah-container").children;
+                            for (let canggahDiv of canggahContainer) {
+                                let canggahId = canggahDiv.id;
+                                let canggahData = {
+                                    nama: document.getElementById(`${canggahId}-nama`).value,
+                                    pasangan: document.getElementById(`${canggahId}-pasangan`).value,
+                                    wareng: []
+                                };
+
+                                let warengContainer = canggahDiv.querySelector(".wareng-container").children;
+                                for (let warengDiv of warengContainer) {
+                                    let warengId = warengDiv.id;
+                                    canggahData.wareng.push({
+                                        nama: document.getElementById(`${warengId}-nama`).value,
+                                        pasangan: document.getElementById(`${warengId}-pasangan`).value
+                                    });
+                                }
+                                buyutData.canggah.push(canggahData);
+                            }
+                            cicitData.buyut.push(buyutData);
+                        }
+                        cucuData.cicit.push(cicitData);
+                    }
+                    anakData.cucu.push(cucuData);
+                }
+                data.anak.push(anakData);
+            }
+            return data;
+        }
+
+        // Fungsi untuk menyimpan data ke localStorage dan menampilkan tabel
+        function simpanData() {
+            if (!document.getElementById("family-form").checkValidity()) {
+                showNotification("Harap isi semua field yang wajib diisi!", 3000);
+                return;
+            }
+
+            const data = ambilDataKeluarga();
+            localStorage.setItem('pohonKeluargaData', JSON.stringify(data));
+            showNotification('Data pohon keluarga telah disimpan!');
+            tampilkanDataTabel(data);
+        }
+
+        // Fungsi untuk menampilkan data dalam tabel
+        function tampilkanDataTabel(data) {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+            
+            // Tambahkan data kakek dan nenek
+            tambahBarisTabel('Kakek', data.sutarno, data.istri, 'Generasi 1');
+            tambahBarisTabel('Nenek', data.istri, '', 'Generasi 1');
+            
+            // Tambahkan data anak dan turunannya
+            data.anak.forEach((anak, aIdx) => {
+                tambahBarisTabel(`Anak ${aIdx+1}`, anak.nama, anak.pasangan, 'Generasi 2');
+                
+                anak.cucu.forEach((cucu, cIdx) => {
+                    tambahBarisTabel(`Cucu ${aIdx+1}.${cIdx+1}`, cucu.nama, cucu.pasangan, 'Generasi 3');
+                    
+                    cucu.cicit.forEach((cicit, citIdx) => {
+                        tambahBarisTabel(`Cicit ${aIdx+1}.${cIdx+1}.${citIdx+1}`, cicit.nama, cicit.pasangan, 'Generasi 4');
+                        
+                        cicit.buyut.forEach((buyut, bIdx) => {
+                            tambahBarisTabel(`Buyut ${aIdx+1}.${cIdx+1}.${citIdx+1}.${bIdx+1}`, buyut.nama, buyut.pasangan, 'Generasi 5');
+                            
+                            buyut.canggah.forEach((canggah, cgIdx) => {
+                                tambahBarisTabel(`Canggah ${aIdx+1}.${cIdx+1}.${citIdx+1}.${bIdx+1}.${cgIdx+1}`, canggah.nama, canggah.pasangan, 'Generasi 6');
+                                
+                                canggah.wareng.forEach((wareng, wIdx) => {
+                                    tambahBarisTabel(`Wareng ${aIdx+1}.${cIdx+1}.${citIdx+1}.${bIdx+1}.${cgIdx+1}.${wIdx+1}`, wareng.nama, wareng.pasangan, 'Generasi 7');
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        }
+        
+        // Fungsi pembantu untuk menambahkan baris ke tabel
+        function tambahBarisTabel(hubungan, nama, pasangan, generasi) {
+            const tableBody = document.getElementById('table-body');
+            const row = document.createElement('tr');
+            const genNumber = generasi.split(' ')[1];
+            row.className = `generasi-${genNumber}`;
+            
+            row.innerHTML = `
+                <td>${generasi}</td>
+                <td>${nama}</td>
+                <td>${pasangan}</td>
+                <td>${hubungan}</td>
+            `;
+            
+            tableBody.appendChild(row);
+        }
+
+        function muatDataDariLocalStorage() {
+            const savedData = localStorage.getItem('pohonKeluargaData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    isiDataKeluarga(data);
+                    tampilkanDataTabel(data);
+                    showNotification('Data pohon keluarga telah dimuat dari penyimpanan lokal!');
+                } catch (e) {
+                    console.error('Gagal memuat data dari localStorage:', e);
+                }
+            }
+        }
+
+        // Fungsi untuk mengisi data keluarga ke form
+        function isiDataKeluarga(data) {
+            // Kosongkan container anak terlebih dahulu
+            document.getElementById('anak-container').innerHTML = '';
+            
+            // Isi data kakek dan nenek
+            document.getElementById('sutarno').value = data.sutarno || '';
+            document.getElementById('istri').value = data.istri || '';
+            
+            // Isi data anak dan turunannya
+            data.anak.forEach((anak, aIdx) => {
+                tambahAnak();
+                const anakId = `anak-${aIdx+1}`;
+                document.getElementById(`${anakId}-nama`).value = anak.nama || '';
+                document.getElementById(`${anakId}-pasangan`).value = anak.pasangan || '';
+                
+                // Isi data cucu
+                anak.cucu.forEach((cucu, cIdx) => {
+                    tambahCucu(aIdx+1);
+                    const cucuId = `cucu-${aIdx+1}-${cIdx+1}`;
+                    document.getElementById(`${cucuId}-nama`).value = cucu.nama || '';
+                    document.getElementById(`${cucuId}-pasangan`).value = cucu.pasangan || '';
+                    
+                    // Isi data cicit
+                    cucu.cicit.forEach((cicit, citIdx) => {
+                        tambahCicit(aIdx+1, cIdx+1);
+                        const cicitId = `cicit-${aIdx+1}-${cIdx+1}-${citIdx+1}`;
+                        document.getElementById(`${cicitId}-nama`).value = cicit.nama || '';
+                        document.getElementById(`${cicitId}-pasangan`).value = cicit.pasangan || '';
+                        
+                        // Isi data buyut
+                        cicit.buyut.forEach((buyut, bIdx) => {
+                            tambahBuyut(aIdx+1, cIdx+1, citIdx+1);
+                            const buyutId = `buyut-${aIdx+1}-${cIdx+1}-${citIdx+1}-${bIdx+1}`;
+                            document.getElementById(`${buyutId}-nama`).value = buyut.nama || '';
+                            document.getElementById(`${buyutId}-pasangan`).value = buyut.pasangan || '';
+                            
+                            // Isi data canggah
+                            buyut.canggah.forEach((canggah, cgIdx) => {
+                                tambahCanggah(aIdx+1, cIdx+1, citIdx+1, bIdx+1);
+                                const canggahId = `canggah-${aIdx+1}-${cIdx+1}-${citIdx+1}-${bIdx+1}-${cgIdx+1}`;
+                                document.getElementById(`${canggahId}-nama`).value = canggah.nama || '';
+                                document.getElementById(`${canggahId}-pasangan`).value = canggah.pasangan || '';
+                                
+                                // Isi data wareng
+                                canggah.wareng.forEach((wareng, wIdx) => {
+                                    tambahWareng(aIdx+1, cIdx+1, citIdx+1, bIdx+1, cgIdx+1);
+                                    const warengId = `wareng-${aIdx+1}-${cIdx+1}-${citIdx+1}-${bIdx+1}-${cgIdx+1}-${wIdx+1}`;
+                                    document.getElementById(`${warengId}-nama`).value = wareng.nama || '';
+                                    document.getElementById(`${warengId}-pasangan`).value = wareng.pasangan || '';
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
+        // Memuat data saat halaman dimuat
+        window.onload = function() {
+            muatDataDariLocalStorage();
+        };
+    </script>
+</body>
+</html>
